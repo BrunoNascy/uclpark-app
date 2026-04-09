@@ -1,11 +1,12 @@
 /**
  * Base URL da API UCL Park.
+ * Configure via EXPO_PUBLIC_API_URL no arquivo .env:
  *
- * - Android Emulator  → 10.0.2.2  (localhost do host dentro do emulador)
- * - iOS Simulator     → localhost
- * - Dispositivo físico → IP real da máquina, ex: 192.168.1.100
+ * - Android Emulator  → http://10.0.2.2:3000
+ * - iOS Simulator     → http://localhost:3000
+ * - Dispositivo físico → http://<IP_DA_MAQUINA>:3000
  */
-const BASE_URL = 'http://192.168.15.8:3000';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
 
 export type SensorStatus = {
   sensor_id: string;
@@ -31,6 +32,9 @@ async function request<T>(path: string): Promise<T> {
 export const api = {
   getSensors: (): Promise<string[]> =>
     request<string[]>('/api/vagas/sensores'),
+
+  getAllStatus: (): Promise<SensorStatus[]> =>
+    request<SensorStatus[]>('/api/vagas/status'),
 
   getSensorStatus: (sensorId: string): Promise<SensorStatus> =>
     request<SensorStatus>(`/api/vagas/${sensorId}/status`),
