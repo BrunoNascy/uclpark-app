@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ParkSpot",
+    "name": "ParkControl - UCL",
     "slug": "uclpark-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,7 +16,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
-        "backgroundColor": "#1D54D3"
+        "backgroundColor": "#ffffff"
       },
       "package": "com.uclpark.app",
       "edgeToEdgeEnabled": true,
@@ -40,6 +40,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "202dee2a-0832-4f7d-90ec-04f88165fb30"
+      }
     }
   }
 }

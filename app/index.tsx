@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  SafeAreaView,
   StatusBar,
-  Platform,
 } from 'react-native';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Feather } from '@expo/vector-icons';
 
 import { useParking, SpotData } from '../hooks/useParking';
 import { SpotCard } from '../components/SpotCard';
@@ -20,33 +19,24 @@ import { AppIcon } from '../components/AppIcon';
 
 type Filter = 'todas' | 'livres' | 'ocupadas';
 
-// Bell icon (inline to avoid @expo/vector-icons dep)
 function BellIcon() {
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <Path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      <Path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </Svg>
-  );
+  return <Feather name="bell" size={20} color="#fff" />;
 }
 
-// Search icon (inline)
 function SearchIcon() {
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <Circle cx="11" cy="11" r="8" />
-      <Path d="m21 21-4.35-4.35" />
-    </Svg>
-  );
+  return <Feather name="search" size={20} color="#fff" />;
 }
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const { spots, loading, error } = useParking();
   const [filter, setFilter] = useState<Filter>('todas');
   const [selectedSensor, setSelectedSensor] = useState<string | null>(null);
 
   const livres = useMemo(() => spots.filter((s) => s.status === 'livre').length, [spots]);
   const ocupadas = useMemo(() => spots.filter((s) => s.status === 'ocupado').length, [spots]);
+
+  const handleSpotPress = useCallback((s: SpotData) => setSelectedSensor(s.sensor_id), []);
 
   const filteredSpots = useMemo<SpotData[]>(() => {
     if (filter === 'livres') return spots.filter((s) => s.status === 'livre');
@@ -59,13 +49,13 @@ export default function HomeScreen() {
       <StatusBar barStyle="light-content" backgroundColor="#1D54D3" />
 
       {/* ── HEADER ── */}
-      <SafeAreaView style={styles.headerSafeArea}>
+      <View style={[styles.headerSafeArea, { paddingTop: insets.top }]}>
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <AppIcon size={44} />
             <View style={styles.headerTitles}>
-              <Text style={styles.appName}>ParkSpot</Text>
-              <Text style={styles.appSub}>Estacionamento Central</Text>
+              <Text style={styles.appName}>ParkControl</Text>
+              <Text style={styles.appSub}>UCL</Text>
             </View>
           </View>
           <View style={styles.headerActions}>
@@ -78,12 +68,12 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </SafeAreaView>
+      </View>
 
       {/* ── BODY (ScrollView starts behind header's bottom padding) ── */}
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Summary card overlaps the blue header */}
@@ -131,7 +121,7 @@ export default function HomeScreen() {
               <SpotCard
                 key={spot.sensor_id}
                 spot={spot}
-                onPress={(s) => setSelectedSensor(s.sensor_id)}
+                onPress={handleSpotPress}
               />
             ))}
           </View>
@@ -212,9 +202,6 @@ const styles = StyleSheet.create({
   scroll: {
     flex: 1,
     marginTop: -CARD_OVERLAP,
-  },
-  scrollContent: {
-    paddingBottom: 40,
   },
   filters: {
     flexDirection: 'row',

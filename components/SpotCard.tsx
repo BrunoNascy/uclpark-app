@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SideCarIcon } from './SideCarIcon';
 import { SpotData } from '../hooks/useParking';
@@ -16,7 +16,7 @@ function formatTime(iso: string): string {
   return `${h}:${m}`;
 }
 
-export function SpotCard({ spot, onPress }: Props) {
+export const SpotCard = memo(function SpotCard({ spot, onPress }: Props) {
   const isFree = spot.status === 'livre';
 
   return (
@@ -55,7 +55,7 @@ export function SpotCard({ spot, onPress }: Props) {
       <View style={[styles.dot, isFree ? styles.dotFree : styles.dotOccupied]} />
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

@@ -6,7 +6,7 @@
  * - iOS Simulator     → http://localhost:3000
  * - Dispositivo físico → http://<IP_DA_MAQUINA>:3000
  */
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+const BASE_URL = 'http://51.178.16.62:3000';
 
 export type SensorStatus = {
   sensor_id: string;

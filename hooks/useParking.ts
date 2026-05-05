@@ -13,7 +13,19 @@ export function useParking() {
     api
       .getAllStatus()
       .then((statuses) => {
-        setSpots(statuses.map((s) => ({ ...s, ready: true })));
+        setSpots((prev) => {
+          const prevMap = new Map(prev.map((s) => [s.sensor_id, s]));
+          let changed = prev.length !== statuses.length;
+          const next = statuses.map((s) => {
+            const existing = prevMap.get(s.sensor_id);
+            if (existing && existing.status === s.status && existing.data === s.data) {
+              return existing; // mesma referência → sem re-render
+            }
+            changed = true;
+            return { ...s, ready: true };
+          });
+          return changed ? next : prev;
+        });
         setLoading(false);
       })
       .catch((err: unknown) => {
@@ -26,7 +38,7 @@ export function useParking() {
 
   useEffect(() => {
     fetchAll();
-    intervalRef.current = setInterval(fetchAll, 5000);
+    intervalRef.current = setInterval(fetchAll, 500);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
