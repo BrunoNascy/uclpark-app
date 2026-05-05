@@ -7,6 +7,9 @@ import {
   StyleSheet,
   ActivityIndicator,
   StatusBar,
+  Modal,
+  Pressable,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -29,9 +32,10 @@ function SearchIcon() {
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { spots, loading, error } = useParking();
+  const { spots, loading, error, errorDetail } = useParking();
   const [filter, setFilter] = useState<Filter>('todas');
   const [selectedSensor, setSelectedSensor] = useState<string | null>(null);
+  const [showErrorDetail, setShowErrorDetail] = useState(false);
 
   const livres = useMemo(() => spots.filter((s) => s.status === 'livre').length, [spots]);
   const ocupadas = useMemo(() => spots.filter((s) => s.status === 'ocupado').length, [spots]);
@@ -109,7 +113,16 @@ export default function HomeScreen() {
           </View>
         ) : error ? (
           <View style={styles.centered}>
-            <Text style={styles.errorText}>{error}</Text>
+            <View style={styles.errorRow}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity
+                style={styles.infoBtn}
+                activeOpacity={0.7}
+                onPress={() => setShowErrorDetail(true)}
+              >
+                <Feather name="info" size={16} color="#EF4444" />
+              </TouchableOpacity>
+            </View>
           </View>
         ) : filteredSpots.length === 0 ? (
           <View style={styles.centered}>
@@ -127,6 +140,38 @@ export default function HomeScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Error detail modal */}
+      <Modal
+        visible={showErrorDetail}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowErrorDetail(false)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setShowErrorDetail(false)}>
+          <Pressable style={styles.modalCard} onPress={() => {}}>
+            <View style={styles.modalHeader}>
+              <Feather name="alert-circle" size={18} color="#EF4444" />
+              <Text style={styles.modalTitle}>Detalhes do Erro</Text>
+              <TouchableOpacity onPress={() => setShowErrorDetail(false)}>
+                <Feather name="x" size={18} color="#94A3B8" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+              <Text style={styles.modalLabel}>Mensagem</Text>
+              <Text style={styles.modalMono}>{errorDetail?.message ?? error}</Text>
+              {errorDetail?.stack ? (
+                <>
+                  <Text style={[styles.modalLabel, { marginTop: 16 }]}>Stack Trace</Text>
+                  <Text style={styles.modalMono}>{errorDetail.stack}</Text>
+                </>
+              ) : null}
+              <Text style={[styles.modalLabel, { marginTop: 16 }]}>Plataforma</Text>
+              <Text style={styles.modalMono}>{Platform.OS} {Platform.Version}</Text>
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {/* History modal */}
       <HistoryModal
@@ -263,12 +308,67 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontSize: 14,
   },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    paddingHorizontal: 32,
+  },
   errorText: {
+    flex: 1,
     color: '#EF4444',
     fontSize: 14,
     textAlign: 'center',
-    paddingHorizontal: 32,
     lineHeight: 22,
+  },
+  infoBtn: {
+    marginTop: 3,
+    padding: 4,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    width: '100%',
+    maxHeight: '80%',
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#334155',
+  },
+  modalTitle: {
+    flex: 1,
+    color: '#F1F5F9',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  modalBody: {
+    padding: 16,
+  },
+  modalLabel: {
+    color: '#94A3B8',
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  modalMono: {
+    color: '#E2E8F0',
+    fontSize: 12,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    lineHeight: 18,
   },
   emptyText: {
     color: '#94A3B8',

@@ -7,6 +7,7 @@ export function useParking() {
   const [spots, setSpots] = useState<SpotData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetail, setErrorDetail] = useState<Error | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchAll = () => {
@@ -29,9 +30,10 @@ export function useParking() {
         setLoading(false);
       })
       .catch((err: unknown) => {
-        const message = err instanceof Error ? err.message : String(err);
-        console.error('[useParking] getAllStatus falhou:', message);
-        setError(`Erro ao conectar à API:\n${message}`);
+        const errObj = err instanceof Error ? err : new Error(String(err));
+        console.error('[useParking] getAllStatus falhou:', errObj.message);
+        setError(`Erro ao conectar à API:\n${errObj.message}`);
+        setErrorDetail(errObj);
         setLoading(false);
       });
   };
@@ -45,5 +47,5 @@ export function useParking() {
     };
   }, []);
 
-  return { spots, loading, error };
+  return { spots, loading, error, errorDetail };
 }
